@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.ShangjijiluDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.jiqi_id as jiqiId
+        ,a.yonghu_id as yonghuId
+        ,a.shangjijilu_uuid_number as shangjijiluUuidNumber
+        ,a.shangji_time as shangjiTime
+        ,a.xiaji_time as xiajiTime
+        ,a.xiaoshi as xiaoshi
+        ,a.huafeijine as huafeijine
+        ,a.shangjijilu_zhuangtai_types as shangjijiluZhuangtaiTypes
+        ,a.insert_time as insertTime
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.ShangjijiluView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,jiqi.jiqi_uuid_number as jiqiUuidNumber
+        ,jiqi.jiqi_qu_types as jiqiQuTypes
+        ,jiqi.jiqi_address as jiqiAddress
+        ,jiqi.jiqi_content as jiqiContent
+        ,jiqi.jiqi_shiyong_types as jiqiShiyongTypes
+        ,jiqi.jiqi_delete as jiqiDelete
+        ,yonghu.yonghu_name as yonghuName
+        ,yonghu.yonghu_phone as yonghuPhone
+        ,yonghu.yonghu_id_number as yonghuIdNumber
+        ,yonghu.yonghu_photo as yonghuPhoto
+
+        FROM shangjijilu  a
+        left JOIN jiqi jiqi ON a.jiqi_id = jiqi.id
+        left JOIN yonghu yonghu ON a.yonghu_id = yonghu.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test="params.jiqiId != null and params.jiqiId != ''">
+                and (
+                    a.jiqi_id = #{params.jiqiId}
+                )
+            </if>
+            <if test="params.yonghuId != null and params.yonghuId != ''">
+                and (
+                    a.yonghu_id = #{params.yonghuId}
+                )
+            </if>
+            <if test=" params.shangjijiluUuidNumber != '' and params.shangjijiluUuidNumber != null and params.shangjijiluUuidNumber != 'null' ">
+                and a.shangjijilu_uuid_number like CONCAT('%',#{params.shangjijiluUuidNumber},'%')
+            </if>
+            <if test=" params.shangjiTimeStart != '' and params.shangjiTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.shangji_time) >= UNIX_TIMESTAMP(#{params.shangjiTimeStart}) ]]>
+            </if>
+            <if test=" params.shangjiTimeEnd != '' and params.shangjiTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.shangji_time) <= UNIX_TIMESTAMP(#{params.shangjiTimeEnd}) ]]>
+            </if>
+            <if test=" params.xiajiTimeStart != '' and params.xiajiTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.xiaji_time) >= UNIX_TIMESTAMP(#{params.xiajiTimeStart}) ]]>
+            </if>
+            <if test=" params.xiajiTimeEnd != '' and params.xiajiTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.xiaji_time) <= UNIX_TIMESTAMP(#{params.xiajiTimeEnd}) ]]>
+            </if>
+            <if test="params.xiaoshiStart != null and params.xiaoshiStart != ''">
+                <![CDATA[  and a.xiaoshi >= #{params.xiaoshiStart}   ]]>
+            </if>
+            <if test="params.xiaoshiEnd != null and params.xiaoshiEnd != ''">
+                <![CDATA[  and a.xiaoshi <= #{params.xiaoshiEnd}   ]]>
+            </if>
+             <if test="params.xiaoshi != null and params.xiaoshi != ''">
+                and a.xiaoshi = #{params.xiaoshi}
+             </if>
+            <if test="params.huafeijineStart != null ">
+                <![CDATA[  and a.huafeijine >= #{params.huafeijineStart}   ]]>
+            </if>
+            <if test="params.huafeijineEnd != null ">
+                <![CDATA[  and a.huafeijine <= #{params.huafeijineEnd}   ]]>
+            </if>
+            <if test="params.shangjijiluZhuangtaiTypes != null and params.shangjijiluZhuangtaiTypes != ''">
+                and a.shangjijilu_zhuangtai_types = #{params.shangjijiluZhuangtaiTypes}
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+
+                <!-- 判断机器的id不为空 -->
+            <if test=" params.jiqiIdNotNull != '' and params.jiqiIdNotNull != null and params.jiqiIdNotNull != 'null' ">
+                and a.jiqi_id IS NOT NULL
+            </if>
+            <if test=" params.jiqiUuidNumber != '' and params.jiqiUuidNumber != null and params.jiqiUuidNumber != 'null' ">
+                and jiqi.jiqi_uuid_number like CONCAT('%',#{params.jiqiUuidNumber},'%')
+            </if>
+            <if test="params.jiqiQuTypes != null  and params.jiqiQuTypes != ''">
+                and jiqi.jiqi_qu_types = #{params.jiqiQuTypes}
+            </if>
+
+            <if test=" params.jiqiAddress != '' and params.jiqiAddress != null and params.jiqiAddress != 'null' ">
+                and jiqi.jiqi_address like CONCAT('%',#{params.jiqiAddress},'%')
+            </if>
+            <if test=" params.jiqiContent != '' and params.jiqiContent != null and params.jiqiContent != 'null' ">
+                and jiqi.jiqi_content like CONCAT('%',#{params.jiqiContent},'%')
+            </if>
+            <if test="params.jiqiShiyongTypes != null  and params.jiqiShiyongTypes != ''">
+                and jiqi.jiqi_shiyong_types = #{params.jiqiShiyongTypes}
+            </if>
+
+            <if test="params.jiqiDeleteStart != null  and params.jiqiDeleteStart != '' ">
+                <![CDATA[  and jiqi.jiqi_delete >= #{params.jiqiDeleteStart}   ]]>
+            </if>
+            <if test="params.jiqiDeleteEnd != null  and params.jiqiDeleteEnd != '' ">
+                <![CDATA[  and jiqi.jiqi_delete <= #{params.jiqiDeleteEnd}   ]]>
+            </if>
+            <if test="params.jiqiDelete != null  and params.jiqiDelete != '' ">
+                and jiqi.jiqi_delete = #{params.jiqiDelete}
+            </if>
+                <!-- 判断用户的id不为空 -->
+            <if test=" params.yonghuIdNotNull != '' and params.yonghuIdNotNull != null and params.yonghuIdNotNull != 'null' ">
+                and a.yonghu_id IS NOT NULL
+            </if>
+            <if test=" params.yonghuName != '' and params.yonghuName != null and params.yonghuName != 'null' ">
+                and yonghu.yonghu_name like CONCAT('%',#{params.yonghuName},'%')
+            </if>
+            <if test=" params.yonghuPhone != '' and params.yonghuPhone != null and params.yonghuPhone != 'null' ">
+                and yonghu.yonghu_phone like CONCAT('%',#{params.yonghuPhone},'%')
+            </if>
+            <if test=" params.yonghuIdNumber != '' and params.yonghuIdNumber != null and params.yonghuIdNumber != 'null' ">
+                and yonghu.yonghu_id_number like CONCAT('%',#{params.yonghuIdNumber},'%')
+            </if>
+        </where>
+
+        order by a.${params.orderBy} desc 
+    </select>
+
+</mapper>
